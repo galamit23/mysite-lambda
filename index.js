@@ -2,25 +2,23 @@ const axios = require('axios');
 
 exports.handler = async (event) => {
   const { location } = JSON.parse(event.body);
-  const apiUrl = `https://www.metaweather.com/api/location/search/?query=${encodeURIComponent(location)}`;
+  const apiKey = '06798b63f699ae29550e1ef7a10e48d7';
+  const apiUrl = `http://api.openweathermap.org/data/2.5/weather?q=London,uk&APPID=${apiKey}`;
 
   try {
     const response = await axios.get(apiUrl);
-    const woeid = response.data[0].woeid;
-    const weatherUrl = `https://www.metaweather.com/api/location/${woeid}/`;
-
-    const weatherResponse = await axios.get(weatherUrl);
-    const weatherData = weatherResponse.data.consolidated_weather[0];
+    const weatherData = response.data;
 
     // Extract the relevant weather information
-    const { weather_state_name, weather_state_abbr, the_temp } = weatherData;
+    const { main, description } = weatherData.weather[0];
+    const temperature = weatherData.main.temp;
 
     const result = {
       location,
       weather: {
-        main: weather_state_name,
-        description: weather_state_abbr,
-        temperature: the_temp,
+        main,
+        description,
+        temperature: temperature - 273.15, // Convert temperature from Kelvin to Celsius
       },
     };
 
